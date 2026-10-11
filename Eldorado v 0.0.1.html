@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eldorado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0c;
+      --surface: rgba(255,255,255,0.04);
+      --surface2: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.09);
+      --text: #f4f4f6;
+      --muted: #8a8a9a;
+      --gold: #d4a853;
+      --gold-soft: rgba(212,168,83,0.15);
+      --purple: #a78bfa;
+      --danger: #f87171;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      background-image:
+        radial-gradient(ellipse at 15% 15%, rgba(212,168,83,0.07) 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 85%, rgba(167,139,250,0.06) 0%, transparent 45%);
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      z-index: 1;
+    }
+    .screen.active {
+      display: flex !important;
+      opacity: 1;
+      z-index: 10;
+    }
+
+    /* SPLASH */
+    #splash {
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      z-index: 100;
+    }
+    .splash-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.4rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 20%, var(--gold) 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: fadeUp 1.2s ease;
+    }
+    .splash-sub {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      animation: fadeUp 1.2s ease 0.2s both;
+    }
+    .splash-bar {
+      width: 120px;
+      height: 3px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 4px;
+      margin-top: 40px;
+      overflow: hidden;
+      animation: fadeUp 1.2s ease 0.3s both;
+    }
+    .splash-bar-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--gold), var(--purple));
+      border-radius: 4px;
+      animation: loadBar 2.2s ease-in-out forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(18px); }
+      to { opacity:1; transform: translateY(0); }
+    }
+    @keyframes loadBar {
+      0% { width:0; }
+      100% { width:100%; }
+    }
+
+    /* LOGIN */
+    #login {
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      padding: 48px 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+      animation: fadeUp 0.6s ease;
+    }
+    .login-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #fff, var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .login-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 36px;
+    }
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+    }
+    .field input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: var(--gold); }
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--gold), #b8860b);
+      color: #111;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(212,168,83,0.35);
+    }
+    .login-error {
+      color: var(--danger);
+      font-size: 0.85rem;
+      text-align: center;
+      margin-top: 14px;
+      min-height: 20px;
+    }
+
+    /* DASHBOARD */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 36px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      flex-shrink: 0;
+    }
+    .topbar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #fff, var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .topbar-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      font-size: 1.15rem;
+    }
+    .btn-icon:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .dash-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+    .dash-card {
+      width: 220px;
+      height: 240px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .dash-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(212,168,83,0.08));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .dash-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(212,168,83,0.4);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    .dash-card:hover::before { opacity: 1; }
+    .dash-card-icon { font-size: 2.8rem; }
+    .dash-card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    .dash-card-desc {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* SECTION HEADER */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .back-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .back-btn:hover { background: var(--surface2); color: var(--text); }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn-add {
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: none;
+      background: var(--gold-soft);
+      color: var(--gold);
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .btn-add:hover {
+      background: var(--gold);
+      color: #111;
+    }
+
+    /* BOOKS */
+    .books-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 22px;
+      align-content: start;
+    }
+    .book-card {
+      height: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px 20px;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .book-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(212,168,83,0.35);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    }
+    .book-icon { font-size: 2rem; margin-bottom: 14px; }
+    .book-name {
+      font-weight: 600;
+      font-size: 1.05rem;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .book-count {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .book-delete {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+    .book-card:hover .book-delete { opacity: 1; }
+    .book-delete:hover { background: rgba(248,113,113,0.15); color: var(--danger); }
+
+    /* NOTES LIST */
+    .notes-list-view {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+    }
+    .note-row {
+      display: flex;
+      align-items: center;
+      padding: 16px 18px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      margin-bottom: 6px;
+      transition: all 0.2s;
+      gap: 14px;
+    }
+    .note-row:hover {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    .note-row-icon { font-size: 1.3rem; }
+    .note-row-info { flex: 1; min-width: 0; }
+    .note-row-title {
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .note-row-preview {
+      font-size: 0.8rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .note-row-date {
+      font-size: 0.75rem;
+      color: var(--muted);
+      opacity: 0.7;
+    }
+
+    /* EDITOR */
+    .editor-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .editor-title {
+      flex: 1;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      font-weight: 500;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      outline: none;
+    }
+    .editor-title::placeholder { color: var(--muted); opacity: 0.5; }
+    .editor-toolbar {
+      display: flex;
+      gap: 6px;
+      padding: 10px 28px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      flex-shrink: 0;
+    }
+    .tool-btn {
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tool-btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .editor-body {
+      flex: 1;
+      padding: 24px 28px 40px;
+      overflow-y: auto;
+    }
+    .editor-content {
+      width: 100%;
+      min-height: 300px;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 1.05rem;
+      line-height: 1.75;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .editor-content:empty:before {
+      content: attr(data-placeholder);
+      color: var(--muted);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* Tables inside notes - PROPER RENDER */
+    .editor-content table,
+    .note-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.95rem;
+      table-layout: fixed;
+    }
+    .editor-content th,
+    .editor-content td,
+    .note-table th,
+    .note-table td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+      min-width: 60px;
+    }
+    .editor-content th,
+    .note-table th {
+      background: var(--surface2);
+      font-weight: 600;
+      color: var(--gold);
+    }
+    .editor-content td,
+    .note-table td {
+      background: rgba(255,255,255,0.02);
+    }
+
+    /* SETTINGS */
+    .settings-body {
+      flex: 1;
+      max-width: 480px;
+      margin: 40px auto;
+      padding: 0 24px;
+      width: 100%;
+      overflow-y: auto;
+    }
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+    }
+    .settings-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      margin-bottom: 24px;
+    }
+    .settings-msg {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      min-height: 22px;
+    }
+    .settings-msg.success { color: #4ade80; }
+    .settings-msg.error { color: var(--danger); }
+
+    /* MEDIA */
+    .media-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      align-content: start;
+    }
+    .media-card {
+      aspect-ratio: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.25s;
+    }
+    .media-card:hover {
+      border-color: rgba(212,168,83,0.4);
+      transform: translateY(-4px);
+    }
+    .media-card img, .media-card video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    input[type="file"] { display: none; }
+
+    .empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      gap: 12px;
+      padding: 40px;
+      grid-column: 1 / -1;
+    }
+    .empty-icon { font-size: 3rem; opacity: 0.35; }
+    .empty p { font-size: 1.05rem; }
+    .empty span { font-size: 0.9rem; opacity: 0.6; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      backdrop-filter: blur(6px);
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: #141418;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      width: 90%;
+      max-width: 360px;
+    }
+    .modal h3 {
+      font-family: 'Playfair Display', serif;
+      margin-bottom: 20px;
+    }
+    .modal-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .modal-row input {
+      flex: 1;
+      padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      outline: none;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .modal-actions button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-cancel { background: var(--surface2); color: var(--text); }
+    .btn-confirm { background: var(--gold); color: #111; }
+
+    @media (max-width: 640px) {
+      .dash-content { gap: 16px; padding: 24px; }
+      .dash-card { width: 150px; height: 170px; }
+      .topbar { padding: 16px 20px; }
+      .books-grid { padding: 20px; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SPLASH -->
+  <div class="screen active" id="splash">
+    <div class="splash-logo">Eldorado</div>
+    <div class="splash-sub">Your private space</div>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="screen" id="login">
+    <div class="login-card">
+      <div class="login-logo">Eldorado</div>
+      <div class="login-sub">Sign in to continue</div>
+      <div class="field">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="btnLogin">Enter</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="screen" id="dashboard">
+    <div class="topbar">
+      <div class="topbar-logo">Eldorado</div>
+      <div class="topbar-actions">
+        <button class="btn-icon" id="btnSettings" title="Settings">⚙️</button>
+        <button class="btn-icon" id="btnLogout" title="Logout">⏻</button>
+      </div>
+    </div>
+    <div class="dash-content">
+      <div class="dash-card" data-goto="notes">
+        <div class="dash-card-icon">📓</div>
+        <div class="dash-card-title">Notes</div>
+        <div class="dash-card-desc">Books & writings</div>
+      </div>
+      <div class="dash-card" data-goto="images">
+        <div class="dash-card-icon">🖼️</div>
+        <div class="dash-card-title">Images</div>
+        <div class="dash-card-desc">Your gallery</div>
+      </div>
+      <div class="dash-card" data-goto="videos">
+        <div class="dash-card-icon">🎬</div>
+        <div class="dash-card-title">Videos</div>
+        <div class="dash-card-desc">Clips & memories</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTES (Books) -->
+  <div class="screen" id="notesSection">
+    <div class="section-header">
+      <button class="back-btn" id="backFromNotes">←</button>
+      <div class="section-title">My Books</div>
+      <button class="btn-add" id="btnNewBook">+ New Book</button>
+    </div>
+    <div class="books-grid" id="booksGrid"></div>
+  </div>
+
+  <!-- NOTES LIST inside Book -->
+  <div class="screen" id="notesListSection">
+    <div class="section-header">
+      <button class="back-btn" id="backFromNotesList">←</button>
+      <div class="section-title" id="bookTitle">Book</div>
+      <button class="btn-add" id="btnNewNote">+ New Note</button>
+    </div>
+    <div class="notes-list-view" id="notesListView"></div>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="screen" id="editor">
+    <div class="editor-top">
+      <button class="back-btn" id="backFromEditor">←</button>
+      <input class="editor-title" id="editorTitle" placeholder="Untitled note...">
+      <button class="btn-icon" id="btnDeleteNote" title="Delete note" style="color:var(--danger)">🗑️</button>
+    </div>
+    <div class="editor-toolbar">
+      <button class="tool-btn" id="btnInsertTable">⊞ Insert Table</button>
+    </div>
+    <div class="editor-body">
+      <div class="editor-content" id="editorContent" contenteditable="true" data-placeholder="Start writing your thoughts..."></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen" id="settings">
+    <div class="section-header">
+      <button class="back-btn" id="backFromSettings">←</button>
+      <div class="section-title">Settings</div>
+    </div>
+    <div class="settings-body">
+      <div class="settings-card">
+        <h3>Change Credentials</h3>
+        <div class="field">
+          <label>New Username</label>
+          <input type="text" id="setUser" placeholder="New username">
+        </div>
+        <div class="field">
+          <label>New Password</label>
+          <input type="password" id="setPass" placeholder="New password">
+        </div>
+        <div class="field">
+          <label>Confirm Password</label>
+          <input type="password" id="setPass2" placeholder="Confirm password">
+        </div>
+        <button class="btn-primary" id="btnSaveCreds" style="margin-top:8px">Save Changes</button>
+        <div class="settings-msg" id="settingsMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IMAGES -->
+  <div class="screen" id="imagesSection">
+    <div class="section-header">
+      <button class="back-btn" id="backFromImages">←</button>
+      <div class="section-title">Images</div>
+      <label class="btn-add" style="cursor:pointer">
+        + Add Image
+        <input type="file" id="imageInput" accept="image/*" multiple>
+      </label>
+    </div>
+    <div class="media-grid" id="imagesGrid"></div>
+  </div>
+
+  <!-- VIDEOS -->
+  <div class="screen" id="videosSection">
+    <div class="section-header">
+      <button class="back-btn" id="backFromVideos">←</button>
+      <div class="section-title">Videos</div>
+      <label class="btn-add" style="cursor:pointer">
+        + Add Video
+        <input type="file" id="videoInput" accept="video/*" multiple>
+      </label>
+    </div>
+    <div class="media-grid" id="videosGrid"></div>
+  </div>
+
+  <!-- Table Modal -->
+  <div class="modal-overlay" id="tableModal">
+    <div class="modal">
+      <h3>Insert Table</h3>
+      <div class="modal-row">
+        <input type="number" id="tableRows" placeholder="Rows" min="1" max="20" value="3">
+        <input type="number" id="tableCols" placeholder="Columns" min="1" max="10" value="3">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" id="tableCancel">Cancel</button>
+        <button class="btn-confirm" id="tableConfirm">Insert</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ========== DATA ==========
+  const DEFAULT_USER = 'fasly';
+  const DEFAULT_PASS = '8820';
+
+  let creds = JSON.parse(localStorage.getItem('eldorado-creds') || 'null') || {
+    user: DEFAULT_USER,
+    pass: DEFAULT_PASS
+  };
+
+  let books = JSON.parse(localStorage.getItem('eldorado-books') || '[]');
+  let notes = JSON.parse(localStorage.getItem('eldorado-notes') || '[]');
+  let images = JSON.parse(localStorage.getItem('eldorado-images') || '[]');
+  let videos = JSON.parse(localStorage.getItem('eldorado-videos') || '[]');
+
+  let currentBookId = null;
+  let currentNoteId = null;
+  let saveTimer = null;
+
+  // ========== HELPERS ==========
+  function uid() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function save() {
+    localStorage.setItem('eldorado-creds', JSON.stringify(creds));
+    localStorage.setItem('eldorado-books', JSON.stringify(books));
+    localStorage.setItem('eldorado-notes', JSON.stringify(notes));
+    localStorage.setItem('eldorado-images', JSON.stringify(images));
+    localStorage.setItem('eldorado-videos', JSON.stringify(videos));
+  }
+
+  function showScreen(id) {
+    // Hide all screens first
+    document.querySelectorAll('.screen').forEach(s => {
+      s.classList.remove('active');
+      s.style.display = 'none';
+    });
+    // Show target
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = 'flex';
+      // Force reflow for transition
+      void el.offsetWidth;
+      el.classList.add('active');
+    }
+  }
+
+  function formatDate(ts) {
+    const d = new Date(ts);
+    const now = new Date();
+    const diff = now - d;
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+    return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' });
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function stripHtml(html) {
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html || '';
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  // ========== SPLASH → LOGIN ==========
+  setTimeout(() => {
+    document.getElementById('splash').classList.remove('active');
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+      showScreen('login');
+      document.getElementById('loginUser').focus();
+    }, 400);
+  }, 2600);
+
+  // ========== LOGIN ==========
+  document.getElementById('btnLogin').addEventListener('click', doLogin);
+  document.getElementById('loginPass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('loginUser').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginPass').focus();
+  });
+
+  function doLogin() {
+    const u = document.getElementById('loginUser').value.trim();
+    const p = document.getElementById('loginPass').value;
+    const err = document.getElementById('loginError');
+
+    if (u === creds.user && p === creds.pass) {
+      err.textContent = '';
+      showScreen('dashboard');
+    } else {
+      err.textContent = 'Wrong username or password';
+    }
+  }
+
+  // ========== DASHBOARD ==========
+  document.querySelectorAll('.dash-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const target = card.dataset.goto;
+      if (target === 'notes') {
+        renderBooks();
+        showScreen('notesSection');
+      } else if (target === 'images') {
+        renderImages();
+        showScreen('imagesSection');
+      } else if (target === 'videos') {
+        renderVideos();
+        showScreen('videosSection');
+      }
+    });
+  });
+
+  document.getElementById('btnLogout').addEventListener('click', () => {
+    document.getElementById('loginUser').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginError').textContent = '';
+    showScreen('login');
+  });
+
+  document.getElementById('btnSettings').addEventListener('click', () => {
+    document.getElementById('setUser').value = creds.user;
+    document.getElementById('setPass').value = '';
+    document.getElementById('setPass2').value = '';
+    document.getElementById('settingsMsg').textContent = '';
+    document.getElementById('settingsMsg').className = 'settings-msg';
+    showScreen('settings');
+  });
+
+  // ========== SETTINGS ==========
+  document.getElementById('backFromSettings').addEventListener('click', () => {
+    showScreen('dashboard');
+  });
+
+  document.getElementById('btnSaveCreds').addEventListener('click', () => {
+    const nu = document.getElementById('setUser').value.trim();
+    const np = document.getElementById('setPass').value;
+    const np2 = document.getElementById('setPass2').value;
+    const msg = document.getElementById('settingsMsg');
+
+    if (!nu) {
+      msg.textContent = 'Username cannot be empty';
+      msg.className = 'settings-msg error';
+      return;
+    }
+    if (np && np !== np2) {
+      msg.textContent = 'Passwords do not match';
+      msg.className = 'settings-msg error';
+      return;
+    }
+    if (np && np.length < 4) {
+      msg.textContent = 'Password must be at least 4 characters';
+      msg.className = 'settings-msg error';
+      return;
+    }
+
+    creds.user = nu;
+    if (np) creds.pass = np;
+    save();
+    msg.textContent = 'Credentials updated successfully!';
+    msg.className = 'settings-msg success';
+  });
+
+  // ========== BOOKS ==========
+  document.getElementById('backFromNotes').addEventListener('click', () => {
+    showScreen('dashboard');
+  });
+
+  document.getElementById('btnNewBook').addEventListener('click', () => {
+    const name = prompt('Book name:');
+    if (!name || !name.trim()) return;
+    books.push({
+      id: uid(),
+      name: name.trim(),
+      created: Date.now()
+    });
+    save();
+    renderBooks();
+  });
+
+  function renderBooks() {
+    const grid = document.getElementById('booksGrid');
+    if (books.length === 0) {
+      grid.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📚</div>
+          <p>No books yet</p>
+          <span>Create your first book to start writing</span>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = books.map(b => {
+      const count = notes.filter(n => n.bookId === b.id).length;
+      return `
+        <div class="book-card" data-id="${b.id}">
+          <button class="book-delete" data-id="${b.id}" title="Delete book">×</button>
+          <div class="book-icon">📖</div>
+          <div class="book-name">${escapeHtml(b.name)}</div>
+          <div class="book-count">${count} note${count !== 1 ? 's' : ''}</div>
+        </div>`;
+    }).join('');
+
+    grid.querySelectorAll('.book-card').forEach(card => {
+      card.addEventListener('click', e => {
+        if (e.target.classList.contains('book-delete')) return;
+        openBook(card.dataset.id);
+      });
+    });
+    grid.querySelectorAll('.book-delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!confirm('Delete this book and all its notes?')) return;
+        const id = btn.dataset.id;
+        books = books.filter(b => b.id !== id);
+        notes = notes.filter(n => n.bookId !== id);
+        save();
+        renderBooks();
+      });
+    });
+  }
+
+  function openBook(id) {
+    currentBookId = id;
+    const book = books.find(b => b.id === id);
+    document.getElementById('bookTitle').textContent = book ? book.name : 'Book';
+    renderNotesList();
+    showScreen('notesListSection');
+  }
+
+  // ========== NOTES LIST ==========
+  document.getElementById('backFromNotesList').addEventListener('click', () => {
+    renderBooks();
+    showScreen('notesSection');
+  });
+
+  document.getElementById('btnNewNote').addEventListener('click', () => {
+    const note = {
+      id: uid(),
+      bookId: currentBookId,
+      title: '',
+      content: '',
+      created: Date.now(),
+      updated: Date.now()
+    };
+    notes.unshift(note);
+    save();
+    openNote(note.id);
+  });
+
+  function renderNotesList() {
+    const view = document.getElementById('notesListView');
+    const bookNotes = notes
+      .filter(n => n.bookId === currentBookId)
+      .sort((a,b) => b.updated - a.updated);
+
+    if (bookNotes.length === 0) {
+      view.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📝</div>
+          <p>No notes in this book</p>
+          <span>Click + New Note to start writing</span>
+        </div>`;
+      return;
+    }
+
+    view.innerHTML = bookNotes.map(n => `
+      <div class="note-row" data-id="${n.id}">
+        <div class="note-row-icon">📄</div>
+        <div class="note-row-info">
+          <div class="note-row-title">${escapeHtml(n.title || 'Untitled')}</div>
+          <div class="note-row-preview">${escapeHtml(stripHtml(n.content).slice(0,70)) || 'Empty note'}</div>
+        </div>
+        <div class="note-row-date">${formatDate(n.updated)}</div>
+      </div>
+    `).join('');
+
+    view.querySelectorAll('.note-row').forEach(row => {
+      row.addEventListener('click', () => openNote(row.dataset.id));
+    });
+  }
+
+  // ========== EDITOR ==========
+  document.getElementById('backFromEditor').addEventListener('click', () => {
+    autoSaveNote();
+    renderNotesList();
+    showScreen('notesListSection');
+  });
+
+  document.getElementById('btnDeleteNote').addEventListener('click', () => {
+    if (!currentNoteId) return;
+    if (!confirm('Delete this note?')) return;
+    notes = notes.filter(n => n.id !== currentNoteId);
+    save();
+    currentNoteId = null;
+    renderNotesList();
+    showScreen('notesListSection');
+  });
+
+  const editorContent = document.getElementById('editorContent');
+  const editorTitle = document.getElementById('editorTitle');
+
+  editorTitle.addEventListener('input', () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(autoSaveNote, 400);
+  });
+
+  editorContent.addEventListener('input', () => {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(autoSaveNote, 400);
+  });
+
+  // Prevent pasting ugly HTML
+  editorContent.addEventListener('paste', e => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+  });
+
+  function openNote(id) {
+    currentNoteId = id;
+    const note = notes.find(n => n.id === id);
+    if (!note) return;
+    editorTitle.value = note.title || '';
+    editorContent.innerHTML = note.content || '';
+    showScreen('editor');
+    editorTitle.focus();
+  }
+
+  function autoSaveNote() {
+    if (!currentNoteId) return;
+    const note = notes.find(n => n.id === currentNoteId);
+    if (!note) return;
+    note.title = editorTitle.value;
+    note.content = editorContent.innerHTML;
+    note.updated = Date.now();
+    save();
+  }
+
+  // ========== TABLE INSERT ==========
+  document.getElementById('btnInsertTable').addEventListener('click', () => {
+    document.getElementById('tableModal').classList.add('show');
+  });
+  document.getElementById('tableCancel').addEventListener('click', () => {
+    document.getElementById('tableModal').classList.remove('show');
+  });
+  document.getElementById('tableConfirm').addEventListener('click', () => {
+    const rows = Math.min(20, Math.max(1, parseInt(document.getElementById('tableRows').value) || 3));
+    const cols = Math.min(10, Math.max(1, parseInt(document.getElementById('tableCols').value) || 3));
+    
+    let html = '<table class="note-table"><thead><tr>';
+    for (let c = 0; c < cols; c++) html += `<th contenteditable="true">Header ${c+1}</th>`;
+    html += '</tr></thead><tbody>';
+    for (let r = 0; r < rows; r++) {
+      html += '<tr>';
+      for (let c = 0; c < cols; c++) html += '<td contenteditable="true">&nbsp;</td>';
+      html += '</tr>';
+    }
+    html += '</tbody></table><p><br></p>';
+
+    // Insert at cursor or at end
+    editorContent.focus();
+    document.execCommand('insertHTML', false, html);
+    document.getElementById('tableModal').classList.remove('show');
+    autoSaveNote();
+  });
+
+  // ========== IMAGES ==========
+  document.getElementById('backFromImages').addEventListener('click', () => showScreen('dashboard'));
+  document.getElementById('imageInput').addEventListener('change', e => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        images.push({
+          id: uid(),
+          name: file.name,
+          data: ev.target.result,
+          created: Date.now()
+        });
+        save();
+        renderImages();
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  });
+
+  function renderImages() {
+    const grid = document.getElementById('imagesGrid');
+    if (images.length === 0) {
+      grid.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🖼️</div>
+          <p>No images yet</p>
+          <span>Click + Add Image to upload</span>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = images.map(img => `
+      <div class="media-card" data-id="${img.id}">
+        <img src="${img.data}" alt="${escapeHtml(img.name)}">
+        <button class="book-delete" style="opacity:1;top:8px;right:8px;background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;width:26px;height:26px;" data-id="${img.id}">×</button>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.book-delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!confirm('Delete this image?')) return;
+        images = images.filter(i => i.id !== btn.dataset.id);
+        save();
+        renderImages();
+      });
+    });
+  }
+
+  // ========== VIDEOS ==========
+  document.getElementById('backFromVideos').addEventListener('click', () => showScreen('dashboard'));
+  document.getElementById('videoInput').addEventListener('change', e => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      if (!file.type.startsWith('video/')) return;
+      if (file.size > 8 * 1024 * 1024) {
+        alert('Video too large (max ~8MB). Try a smaller clip.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        videos.push({
+          id: uid(),
+          name: file.name,
+          data: ev.target.result,
+          created: Date.now()
+        });
+        save();
+        renderVideos();
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  });
+
+  function renderVideos() {
+    const grid = document.getElementById('videosGrid');
+    if (videos.length === 0) {
+      grid.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🎬</div>
+          <p>No videos yet</p>
+          <span>Click + Add Video to upload</span>
+        </div>`;
+      return;
+    }
+    grid.innerHTML = videos.map(vid => `
+      <div class="media-card" data-id="${vid.id}">
+        <video src="${vid.data}" controls style="width:100%;height:100%;object-fit:cover;"></video>
+        <button class="book-delete" style="opacity:1;top:8px;right:8px;background:rgba(0,0,0,0.55);color:#fff;border-radius:50%;width:26px;height:26px;z-index:2;" data-id="${vid.id}">×</button>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.book-delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!confirm('Delete this video?')) return;
+        videos = videos.filter(v => v.id !== btn.dataset.id);
+        save();
+        renderVideos();
+      });
+    });
+  }
+</script>
+</body>
+</html>
